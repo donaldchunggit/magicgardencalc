@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Magic Garden – Money Optimiser (Legit)</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#121a23; --muted:#8aa0b2; --text:#e8f0f7; --accent:#60a5fa; --good:#34d399; --warn:#fbbf24; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .wrap { max-width:1100px; margin:0 auto; padding:20px; }
+    h1 { margin:0 0 6px; font-size:22px; }
+    p { margin:6px 0; color:var(--muted); }
+    .grid { display:grid; gap:14px; grid-template-columns: 360px 1fr; }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    .card { background:var(--card); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+    label { display:block; margin:10px 0 6px; color:var(--muted); font-size:12px; }
+    input, select { width:100%; padding:10px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.10); background:#0e141c; color:var(--text); outline:none; }
+    input:focus, select:focus { border-color: rgba(96,165,250,0.6); box-shadow:0 0 0 3px rgba(96,165,250,0.15); }
+    .row { display:flex; gap:10px; }
+    .row > div { flex:1; }
+    .btn { margin-top:12px; width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.10); background:rgba(96,165,250,0.15); color:var(--text); cursor:pointer; }
+    .btn:hover { background:rgba(96,165,250,0.22); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px 8px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:left; }
+    th { color:var(--muted); font-weight:600; font-size:12px; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); color:var(--muted); font-size:12px; }
+    .good { color:var(--good); }
+    .warn { color:var(--warn); }
+    .mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .small { font-size:12px; color:var(--muted); }
+    .topline { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topline">
+      <div>
+        <h1>Magic Garden – Money Optimiser (Legit)</h1>
+        <p>Ranks crops by <span class="mono">coins/hour</span> for <b>your</b> check-in frequency, plots, and mutation multiplier.</p>
+      </div>
+      <span class="tag">No bots • No automation • Just optimisation</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 style="margin:0 0 8px; font-size:16px;">Your setup</h2>
+
+        <label>Plots you actively farm (integer)</label>
+        <input id="plots" type="number" min="1" step="1" value="10"/>
+
+        <label>How often you check/harvest (minutes)</label>
+        <input id="checkMins" type="number" min="1" step="1" value="5"/>
+
+        <div class="row">
+          <div>
+            <label>Mutation multiplier</label>
+            <select id="mutation">
+              <option value="1">None (×1)</option>
+              <option value="2">Wet-ish (×2) [custom guess]</option>
+              <option value="5">Strong mutation (×5) [custom guess]</option>
+              <option value="10">Frozen (×10)</option>
+            </select>
+            <div class="small">Frozen ×10 is a known big money spike. Adjust if your scenario differs.</div>
+          </div>
+          <div>
+            <label>Size multiplier (optional)</label>
+            <input id="sizeMult" type="number" min="0.1" step="0.1" value="1.0"/>
+            <div class="small">Crop size increases <i>grow time</i> and <i>sell price</i> multiplicatively.</div>
+          </div>
+        </div>
+
+        <label>Mode</label>
+        <select id="mode">
+          <option value="rank">Rank all crops</option>
+          <option value="compare">Compare two crops</option>
+        </select>
+
+        <div id="compareBlock" style="display:none;">
+          <label>Crop A</label>
+          <select id="cropA"></select>
+          <label>Crop B</label>
+          <select id="cropB"></select>
+        </div>
+
+        <button class="btn" id="run">Calculate</button>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin:14px 0;" />
+
+        <div class="small">
+          <b>How the calculator treats crops</b><br/>
+          • Single-harvest: profit/plot/cycle ≈ <span class="mono">(sell − seed)</span> (× mutation × size).<br/>
+          • Multi-harvest: assumes you harvest <span class="mono">regrowSlots</span> crops per “mature cycle” (mature time). This matches the wiki showing regrow slots + mature time for multi-harvest crops. :contentReference[oaicite:5]{index=5}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px; font-size:16px;">Results</h2>
+        <div id="summary" class="small" style="margin-bottom:10px;"></div>
+        <div id="out"></div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:14px;">
+      Data source: Magic Garden Wiki crop list fields (seed price, base sell-price, grow time, regrow slots, mature time). :contentReference[oaicite:6]{index=6}
+      Frozen ×10 multiplier is referenced in the wiki’s “First Steps” money section. :contentReference[oaicite:7]{index=7}
+    </p>
+  </div>
+
+  <script>
+    // Minimal crop dataset seeded from the crop list table on magicgarden.wiki/Crops.
+    // Units:
+    //  - seed: coins
+    //  - sell: base sell-price (coins)
+    //  - grow: base crop grow time (seconds)
+    //  - regrowSlots: 0 for single-harvest; else number of slots (e.g., "5 Slots" -> 5)
+    //  - mature: time to reach full slots (seconds) for multi-harvest; null for single-harvest
+    const CROPS = [
+      { name:"Carrot", seed:10, sell:20, growS:4, regrowSlots:0, matureS:null, rarity:"Common", type:"Single" },
+      { name:"Cabbage", seed:30, sell:42, growS:35, regrowSlots:1, matureS:45, rarity:"Common", type:"Multi" },
+      { name:"Strawberry", seed:50, sell:14, growS:10, regrowSlots:5, matureS:70, rarity:"Common", type:"Multi" },
+      { name:"Aloe", seed:135, sell:310, growS:45, regrowSlots:0, matureS:null, rarity:"Common", type:"Single" },
+      { name:"Beet", seed:210, sell:350, growS:60, regrowSlots:0, matureS:null, rarity:"Common", type:"Single" },
+      { name:"Fava Bean", seed:250, sell:30, growS:240, regrowSlots:8, matureS:900, rarity:"Uncommon", type:"Multi" },
+      { name:"Blueberry", seed:400, sell:23, growS:22, regrowSlots:5, matureS:105, rarity:"Uncommon", type:"Multi" },
+      { name:"Apple", seed:500, sell:73, growS:5400, regrowSlots:7, matureS:21600, rarity:"Uncommon", type:"Multi" },
+      { name:"Tulip", seed:600, sell:767, growS:8, regrowSlots:0, matureS:null, rarity:"Uncommon", type:"Single" },
+      { name:"Tomato", seed:800, sell:27, growS:40, regrowSlots:2, matureS:1100, rarity:"Uncommon", type:"Multi" },
+      { name:"Daffodil", seed:1000, sell:1090, growS:50, regrowSlots:0, matureS:null, rarity:"Uncommon", type:"Single" },
+      { name:"Corn", seed:1300, sell:36, growS:30, regrowSlots:1, matureS:130, rarity:"Uncommon", type:"Multi" },
+      { name:"Watermelon", seed:2500, sell:2708, growS:720, regrowSlots:0, matureS:null, rarity:"Rare", type:"Single" },
+      { name:"Pumpkin", seed:3000, sell:3700, growS:2100, regrowSlots:0, matureS:null, rarity:"Rare", type:"Single" },
+      { name:"Echeveria", seed:4200, sell:5520, growS:120, regrowSlots:0, matureS:null, rarity:"Rare", type:"Single" },
+      { name:"Pear", seed:6000, sell:250, growS:5400, regrowSlots:7, matureS:21600, rarity:"Rare", type:"Multi" },
+      { name:"Gentian", seed:9000, sell:10000, growS:90, regrowSlots:0, matureS:null, rarity:"Rare", type:"Single" },
+      { name:"Coconut", seed:10000, sell:302, growS:3600, regrowSlots:7, matureS:43200, rarity:"Legendary", type:"Multi" },
+      { name:"Banana", seed:15000, sell:1750, growS:4500, regrowSlots:5, matureS:14400, rarity:"Legendary", type:"Multi" },
+      { name:"Lily", seed:20000, sell:20123, growS:240, regrowSlots:0, matureS:null, rarity:"Legendary", type:"Single" },
+      { name:"Camellia", seed:55000, sell:4875, growS:10800, regrowSlots:8, matureS:86400, rarity:"Legendary", type:"Multi" },
+      { name:"Burro's Tail", seed:93000, sell:6000, growS:100, regrowSlots:2, matureS:1800, rarity:"Legendary", type:"Multi" },
+      { name:"Mushroom", seed:150000, sell:160000, growS:86400, regrowSlots:0, matureS:null, rarity:"Mythical", type:"Single" },
+      { name:"Cactus", seed:250000, sell:261000, growS:9000, regrowSlots:0, matureS:null, rarity:"Mythical", type:"Single" },
+      { name:"Bamboo", seed:400000, sell:500000, growS:43200, regrowSlots:0, matureS:null, rarity:"Mythical", type:"Single" },
+      { name:"Violet Cort", seed:520000, sell:600000, growS:64800, regrowSlots:0, matureS:null, rarity:"Mythical", type:"Single" },
+      { name:"Chrysanthemum", seed:670000, sell:18000, growS:10800, regrowSlots:7, matureS:86400, rarity:"Mythical", type:"Multi" },
+      { name:"Grape", seed:850000, sell:12500, growS:900, regrowSlots:1, matureS:86400, rarity:"Mythical", type:"Multi" },
+      { name:"Pepper", seed:1000000, sell:7220, growS:600, regrowSlots:9, matureS:560, rarity:"Mythical", type:"Multi" },
+    ];
+
+    function parseNumber(id) {
+      const v = Number(document.getElementById(id).value);
+      return Number.isFinite(v) ? v : 0;
+    }
+
+    function coinsPerHourForCrop(c, plots, checkMins, mutationMult, sizeMult) {
+      const checkS = Math.max(60, checkMins * 60);
+
+      // Apply multipliers (simple model: size scales both time and sell)
+      const sell = c.sell * mutationMult * sizeMult;
+      const growS = c.growS * sizeMult;
+
+      if (c.regrowSlots === 0) {
+        // Single-harvest: profit per harvest per plot
+        const profit = Math.max(0, sell - c.seed);
+        // Effective cycle time is at least growS, but also constrained by check interval
+        const cycleS = Math.max(growS, checkS);
+        const perPlotPerHour = profit * (3600 / cycleS);
+        return perPlotPerHour * plots;
+      }
+
+      // Multi-harvest: treat "mature time" as time to fill regrowSlots harvestable crops.
+      // Constrained by check interval (if you check slower than mature time, you lose cycles).
+      const matureS = (c.matureS ?? growS);
+      const effectiveCycleS = Math.max(matureS, checkS);
+
+      // Coins per full cycle per plot: regrowSlots harvests × sell (no seed cost after initial)
+      // If you want to include initial seed cost amortisation, we do a mild amortisation over 24h.
+      const cycleValue = c.regrowSlots * sell;
+
+      // Amortise seed cost as a 24h one-off (so it doesn’t dominate multi-harvest forever).
+      const seedDailyCost = c.seed / 24.0;
+      const grossPerHourPerPlot = cycleValue * (3600 / effectiveCycleS);
+      const netPerHourPerPlot = Math.max(0, grossPerHourPerPlot - seedDailyCost);
+
+      return netPerHourPerPlot * plots;
+    }
+
+    function fmt(n) {
+      if (!Number.isFinite(n)) return "—";
+      if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(2) + "B";
+      if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + "M";
+      if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(2) + "K";
+      return n.toFixed(0);
+    }
+
+    function renderRank(rows) {
+      const top = rows.slice(0, 15);
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Crop</th>
+            <th>Type</th>
+            <th>Rarity</th>
+            <th class="mono">Coins/hour</th>
+            <th class="mono">Coins/day</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      top.forEach((r, i) => {
+        const cls = i === 0 ? "good" : (i < 5 ? "" : "muted");
+        html += `<tr>
+          <td class="mono">${i+1}</td>
+          <td><b class="${cls}">${r.name}</b></td>
+          <td>${r.type}</td>
+          <td>${r.rarity}</td>
+          <td class="mono ${i===0?"good":""}">${fmt(r.cph)}</td>
+          <td class="mono">${fmt(r.cph*24)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      html += `<p class="small" style="margin-top:10px;">
+        Tip: If a crop looks “bad” but becomes insane when you select <b>Frozen ×10</b>, that’s your signal to <b>plant it and wait for weather</b> rather than insta-harvesting.
+      </p>`;
+      return html;
+    }
+
+    function renderCompare(a, b) {
+      const better = a.cph >= b.cph ? a : b;
+      const worse  = a.cph >= b.cph ? b : a;
+      const ratio = worse.cph > 0 ? (better.cph / worse.cph) : Infinity;
+
+      return `
+        <div class="card" style="background:#0e141c; border-color: rgba(255,255,255,0.08);">
+          <div class="topline">
+            <div><b>${better.name}</b> is better for your settings.</div>
+            <span class="tag">${Number.isFinite(ratio) ? ratio.toFixed(2)+"×" : "∞×"}</span>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <div class="small">Crop A</div>
+              <div><b>${a.name}</b> <span class="tag">${a.type}</span></div>
+              <div class="mono">Coins/hour: <b class="${a===better?"good":""}">${fmt(a.cph)}</b></div>
+              <div class="mono">Coins/day: ${fmt(a.cph*24)}</div>
+            </div>
+            <div>
+              <div class="small">Crop B</div>
+              <div><b>${b.name}</b> <span class="tag">${b.type}</span></div>
+              <div class="mono">Coins/hour: <b class="${b===better?"good":""}">${fmt(b.cph)}</b></div>
+              <div class="mono">Coins/day: ${fmt(b.cph*24)}</div>
+            </div>
+          </div>
+          <p class="small" style="margin-top:10px;">
+            If you check less often than the crop’s cycle time, your effective income is capped by your check-in interval.
+          </p>
+        </div>
+      `;
+    }
+
+    function fillCropSelects() {
+      const a = document.getElementById("cropA");
+      const b = document.getElementById("cropB");
+      [a,b].forEach(sel => {
+        sel.innerHTML = "";
+        CROPS.forEach((c, i) => {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = `${c.name} (${c.type}, ${c.rarity})`;
+          sel.appendChild(opt);
+        });
+      });
+      a.value = "22"; // Burro's Tail-ish default (index may shift)
+      b.value = "20"; // Lily-ish default
+    }
+
+    function run() {
+      const plots = Math.max(1, Math.floor(parseNumber("plots")));
+      const checkMins = Math.max(1, Math.floor(parseNumber("checkMins")));
+      const mutationMult = parseNumber("mutation");
+      const sizeMult = Math.max(0.1, parseNumber("sizeMult"));
+      const mode = document.getElementById("mode").value;
+
+      const rows = CROPS.map(c => ({
+        ...c,
+        cph: coinsPerHourForCrop(c, plots, checkMins, mutationMult, sizeMult)
+      })).sort((x,y) => y.cph - x.cph);
+
+      const summary = document.getElementById("summary");
+      summary.innerHTML = `
+        Settings: <span class="mono">${plots}</span> plots • check every <span class="mono">${checkMins}</span> min • mutation ×<span class="mono">${mutationMult}</span> • size ×<span class="mono">${sizeMult}</span><br/>
+        Top pick under these assumptions: <b class="good">${rows[0]?.name ?? "—"}</b> at ~<span class="mono good">${fmt(rows[0]?.cph ?? 0)}</span> coins/hour.
+      `;
+
+      const out = document.getElementById("out");
+      if (mode === "rank") {
+        out.innerHTML = renderRank(rows);
+      } else {
+        const ai = Number(document.getElementById("cropA").value);
+        const bi = Number(document.getElementById("cropB").value);
+        const A = CROPS[ai];
+        const B = CROPS[bi];
+        const a = { ...A, cph: coinsPerHourForCrop(A, plots, checkMins, mutationMult, sizeMult) };
+        const b = { ...B, cph: coinsPerHourForCrop(B, plots, checkMins, mutationMult, sizeMult) };
+        out.innerHTML = renderCompare(a,b);
+      }
+    }
+
+    document.getElementById("mode").addEventListener("change", (e) => {
+      document.getElementById("compareBlock").style.display =
+        (e.target.value === "compare") ? "block" : "none";
+    });
+
+    document.getElementById("run").addEventListener("click", run);
+
+    fillCropSelects();
+    run();
+  </script>
+</body>
+</html>
